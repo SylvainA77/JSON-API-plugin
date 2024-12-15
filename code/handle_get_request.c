@@ -1,10 +1,12 @@
 #include "common.h"
 
+#define LOG 1
+
 char* handle_get_request(const char *url) {
 // initialize the JSON answer
     cJSON *json = cJSON_CreateObject();
     char *json_string;
- #if LOG  == 1
+#if LOG  == 1
   FILE *log = fopen("/var/lib/mysql/json2sql.log", "a");
   fwrite("INIT:",sizeof(char),5,log);
   fwrite(url, sizeof(char), sizeof(url), log);
@@ -60,7 +62,9 @@ char* handle_get_request(const char *url) {
 #endif  // end LOG
         MYSQL *connection = mysql_init(NULL);
         if (mysql_real_connect_local(connection) == NULL) {
+#if LOG == 1
           fwrite("CNX FAILED\n",sizeof(char), 11,log);
+#endif  // end LOG
           cJSON_AddStringToObject(json, "connexionstatus", "FAILED");
           cJSON_AddNumberToObject(json, "mariadbcode", mysql_errno(connection));
           cJSON_AddNumberToObject(json, "httpcode", HTTP_INTERNAL_SERVER_ERROR);
@@ -142,9 +146,9 @@ char* handle_get_request(const char *url) {
 #endif // end LOG
   json_string = cJSON_PrintUnformatted(json);
   cJSON_Delete(json);
-  fclose(log);
 #if LOG == 1
   fwrite(json_string,sizeof(char),sizeof(json_string),log);
+  fclose(log);
 #endif // end LOG
   return json_string; // Caller is responsible for freeing this memory
 } // end function
