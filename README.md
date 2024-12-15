@@ -37,5 +37,5 @@ The goal is to provide an easy way to map simple DML statements and stored proce
 
 * [Awesome people](https://github.com/SylvainA77/JSON-API-plugin/blob/main/Contributions.md)
 
-  ## design decisions
+## design decisions
 * [discussion](https://github.com/SylvainA77/JSON2SQL-plugin/blob/main/doc/stack-n-architecture-decisions.md)
