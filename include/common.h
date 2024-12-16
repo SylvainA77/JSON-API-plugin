@@ -21,6 +21,9 @@
 // cJSON headers
 #include <cjson/cJSON.h>
 
+//logging func header
+#include "log.h"
+
 // global variables sharing
 // Defining the resources we want to check
 // TODO : ability to declare the list in a config file / system variable
