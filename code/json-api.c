@@ -18,6 +18,8 @@
 #include "handle_patch_request.h"
 #include "handle_delete_request.h"
 
+#define LOG 1
+
 // Plugin declaration structure
 struct st_mysql_daemon json_api_plugin = {
     MYSQL_DAEMON_INTERFACE_VERSION
@@ -91,7 +93,13 @@ static int request_handler(void *cls, struct MHD_Connection *connection,
     response = cJSON_PrintUnformatted(json);
     cJSON_Delete(json);     
 #else
+#if LOG == 1
+  log_message("GET REQUEST");
+#endif // end LOG
       response = handle_get_request(url);
+#if LOG == 1
+  log_message(response);
+#endif // end LOG
 #endif // GETMETHODCORK
     } else if (strcmp(method, "POST") == 0) {
 // INSERT
