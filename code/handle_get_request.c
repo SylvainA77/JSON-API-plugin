@@ -1,15 +1,14 @@
 #include "common.h"
 
-#define LOG 1
+#define GETLOG 1
 
 char* handle_get_request(const char *url) {
 // initialize the JSON answer
     cJSON *json = cJSON_CreateObject();
     char *json_string;
-#if LOG  == 1
-  FILE *log = fopen("/var/lib/mysql/json2sql.log", "a");
-  fwrite("INIT:",sizeof(char),5,log);
-  fwrite(url, sizeof(char), sizeof(url), log);
+#if GETLOG == 1
+  log_message("INIT");
+  log_message(url);
 #endif // end LOG
     cJSON_AddStringToObject(json, "method", "GET");
     cJSON_AddStringToObject(json, "url", url);
@@ -31,39 +30,51 @@ char* handle_get_request(const char *url) {
 // building query
       snprintf(query, sizeof(query), "SELECT * FROM %s.%s WHERE %s = '%s'", schema, table, colname, colvalue);
       cJSON_AddStringToObject(json, "action", "QUERY");
+#if GETLOG == 1
+  log_message("QUERY");
+#endif // end LOG
     } else if (strcmp(url, "/v1/status") == 0) {
 // global status
       snprintf(query, sizeof(query), "SHOW GLOBAL STATUS");
       cJSON_AddStringToObject(json, "action", "STATUS");
+#if GETLOG == 1
+  log_message("STATUS");
+#endif // end LOG
     } else if (strcmp(url, "/v1") == 0) {
 // healthcheck
       cJSON_AddStringToObject(json, "action", "HEALTCHECK");
       snprintf(query, sizeof(query),"select now() as NOW");
+#if GETLOG == 1
+  log_message("HEALTHCHECK");
+#endif // end LOG
     } else if (strcmp(url, "/v1/ping")) {
 // ping
       bypass=1;
       cJSON_AddStringToObject(json, "action", "PING");
       cJSON_AddNumberToObject(json, "httpcode", HTTP_OK);
       cJSON_AddStringToObject(json, "message", "pong");
+#if GETLOG == 1
+  log_message("PING");
+#endif // end LOG
    } else {
 // bad url KO
       bypass=1;
       cJSON_AddStringToObject(json, "action", "ERROR");
       cJSON_AddStringToObject(json, "error", "Invalid GET request");
       cJSON_AddNumberToObject(json, "httpcode", HTTP_BAD_REQUEST);
-#if LOG == 1
-  fwrite("ERROR\n",sizeof(char),6,log);
+#if GETLOG == 1
+  log_message("Invalid GET request");
 #endif  // end LOG
   } // end if sscanf
 // we establish internal local connexion
    if (bypass == 0) {
-#if LOG == 1
-  fwrite("CNX\n",sizeof(char), 4, log);
+#if GETLOG == 1
+  log_message("CNX init");
 #endif  // end LOG
         MYSQL *connection = mysql_init(NULL);
         if (mysql_real_connect_local(connection) == NULL) {
-#if LOG == 1
-          fwrite("CNX FAILED\n",sizeof(char), 11,log);
+#if GETLOG == 1
+          log_message("CNX FAILED");
 #endif  // end LOG
           cJSON_AddStringToObject(json, "connexionstatus", "FAILED");
           cJSON_AddNumberToObject(json, "mariadbcode", mysql_errno(connection));
@@ -71,7 +82,7 @@ char* handle_get_request(const char *url) {
         } else if (mysql_real_query(connection, STRING_WITH_LEN(query))) {
 // executing the query
 #if LOG == 1
-  fwrite("QUERY FAILED\n",sizeof(char),12,log);
+  log_message("QUERY FAILED");
 #endif // end LOG
           cJSON_AddStringToObject(json, "connexionstatus", "OK");
           cJSON_AddStringToObject(json, "querystatus", "FAILED");
@@ -82,7 +93,7 @@ char* handle_get_request(const char *url) {
         } else { // else if connect
 // check resulset existence
 #if LOG == 1
-  fwrite("RESULT\n",sizeof(char),7,log);
+  log_message("RESULT\n",sizeof(char),7,log);
 #endif // end LOG
           cJSON_AddStringToObject(json, "connexionstatus", "OK");
           cJSON_AddStringToObject(json, "querystatus", "OK");
@@ -91,7 +102,7 @@ char* handle_get_request(const char *url) {
           MYSQL_RES *resultset = mysql_store_result(connection);
           if (resultset == NULL) {
 #if LOG == 1
-  fwrite("EMPTY\n",sizeof(char),6,log);
+  log_message("NO DATA FOUND");
 #endif // end LOG
 // either no data or error
              cJSON_AddStringToObject(json, "status", "NO DATA FOUND");
@@ -102,7 +113,7 @@ char* handle_get_request(const char *url) {
           } else { // else if resultset
 // resulset to json translation
 #if LOG == 1
-  fwrite("NOT EMPTY\n",sizeof(char),10,log);
+  log_message("ROWS FOUND");
 #endif // end LOG
              int num_rows = (int)mysql_num_rows(resultset);
              cJSON_AddNumberToObject(json, "rows", num_rows);
@@ -111,7 +122,7 @@ char* handle_get_request(const char *url) {
 #if ARRAYCORK == 1
              cJSON_AddStringToObject(json, "data", "");
 #if LOG == 1
-  fwrite("ARRAYCORK\n",sizeof(char),10,log);
+  log_message("ARRAYCORK");
 #endif // end LOG
 #else
 // Create a JSON array to hold result rows
@@ -120,7 +131,7 @@ char* handle_get_request(const char *url) {
              MYSQL_FIELD *fields = mysql_fetch_fields(resultset);
              MYSQL_ROW row;
 #if LOG == 1
-  fwrite("ARRAY\n",sizeof(char),6,log);
+  log_message("ARRAY");
 #endif // end LOG
              while ((row = mysql_fetch_row(resultset))) {
 // Create a JSON object for each row
@@ -142,13 +153,12 @@ char* handle_get_request(const char *url) {
      } // end if bypass
 #endif // GETCORK
 #if LOG == 1
-  fwrite("END\n",sizeof(char),10,log);
+  log_message("END");
 #endif // end LOG
   json_string = cJSON_PrintUnformatted(json);
   cJSON_Delete(json);
 #if LOG == 1
-  fwrite(json_string,sizeof(char),sizeof(json_string),log);
-  fclose(log);
+  log_message(json_string);
 #endif // end LOG
   return json_string; // Caller is responsible for freeing this memory
 } // end function
