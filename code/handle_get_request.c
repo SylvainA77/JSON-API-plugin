@@ -7,8 +7,8 @@ char* handle_get_request(const char *url) {
     cJSON *json = cJSON_CreateObject();
     char *json_string;
 #if GETLOG == 1
-  log_message("INIT");
-  log_message(url);
+  printf("INIT");
+  printf(url);
 #endif // end LOG
     cJSON_AddStringToObject(json, "method", "GET");
     cJSON_AddStringToObject(json, "url", url);
@@ -31,21 +31,21 @@ char* handle_get_request(const char *url) {
       snprintf(query, sizeof(query), "SELECT * FROM %s.%s WHERE %s = '%s'", schema, table, colname, colvalue);
       cJSON_AddStringToObject(json, "action", "QUERY");
 #if GETLOG == 1
-  log_message("QUERY");
+  printf("QUERY");
 #endif // end LOG
     } else if (strcmp(url, "/v1/status") == 0) {
 // global status
       snprintf(query, sizeof(query), "SHOW GLOBAL STATUS");
       cJSON_AddStringToObject(json, "action", "STATUS");
 #if GETLOG == 1
-  log_message("STATUS");
+  printf("STATUS");
 #endif // end LOG
     } else if (strcmp(url, "/v1") == 0) {
 // healthcheck
       cJSON_AddStringToObject(json, "action", "HEALTCHECK");
       snprintf(query, sizeof(query),"select now() as NOW");
 #if GETLOG == 1
-  log_message("HEALTHCHECK");
+  printf("HEALTHCHECK");
 #endif // end LOG
     } else if (strcmp(url, "/v1/ping")) {
 // ping
@@ -54,7 +54,7 @@ char* handle_get_request(const char *url) {
       cJSON_AddNumberToObject(json, "httpcode", HTTP_OK);
       cJSON_AddStringToObject(json, "message", "pong");
 #if GETLOG == 1
-  log_message("PING");
+  printf("PING");
 #endif // end LOG
    } else {
 // bad url KO
@@ -63,18 +63,18 @@ char* handle_get_request(const char *url) {
       cJSON_AddStringToObject(json, "error", "Invalid GET request");
       cJSON_AddNumberToObject(json, "httpcode", HTTP_BAD_REQUEST);
 #if GETLOG == 1
-  log_message("Invalid GET request");
+  printf("Invalid GET request");
 #endif  // end LOG
   } // end if sscanf
 // we establish internal local connexion
    if (bypass == 0) {
 #if GETLOG == 1
-  log_message("CNX init");
+  printf("CNX init");
 #endif  // end LOG
         MYSQL *connection = mysql_init(NULL);
         if (mysql_real_connect_local(connection) == NULL) {
 #if GETLOG == 1
-          log_message("CNX FAILED");
+          printf("CNX FAILED");
 #endif  // end LOG
           cJSON_AddStringToObject(json, "connexionstatus", "FAILED");
           cJSON_AddNumberToObject(json, "mariadbcode", mysql_errno(connection));
@@ -82,7 +82,7 @@ char* handle_get_request(const char *url) {
         } else if (mysql_real_query(connection, STRING_WITH_LEN(query))) {
 // executing the query
 #if LOG == 1
-  log_message("QUERY FAILED");
+  printf("QUERY FAILED");
 #endif // end LOG
           cJSON_AddStringToObject(json, "connexionstatus", "OK");
           cJSON_AddStringToObject(json, "querystatus", "FAILED");
@@ -93,7 +93,7 @@ char* handle_get_request(const char *url) {
         } else { // else if connect
 // check resulset existence
 #if LOG == 1
-  log_message("RESULT\n",sizeof(char),7,log);
+  printf("RESULT\n");
 #endif // end LOG
           cJSON_AddStringToObject(json, "connexionstatus", "OK");
           cJSON_AddStringToObject(json, "querystatus", "OK");
@@ -102,7 +102,7 @@ char* handle_get_request(const char *url) {
           MYSQL_RES *resultset = mysql_store_result(connection);
           if (resultset == NULL) {
 #if LOG == 1
-  log_message("NO DATA FOUND");
+  printf("NO DATA FOUND");
 #endif // end LOG
 // either no data or error
              cJSON_AddStringToObject(json, "status", "NO DATA FOUND");
@@ -113,7 +113,7 @@ char* handle_get_request(const char *url) {
           } else { // else if resultset
 // resulset to json translation
 #if LOG == 1
-  log_message("ROWS FOUND");
+  printf("ROWS FOUND");
 #endif // end LOG
              int num_rows = (int)mysql_num_rows(resultset);
              cJSON_AddNumberToObject(json, "rows", num_rows);
@@ -122,7 +122,7 @@ char* handle_get_request(const char *url) {
 #if ARRAYCORK == 1
              cJSON_AddStringToObject(json, "data", "");
 #if LOG == 1
-  log_message("ARRAYCORK");
+  printf("ARRAYCORK");
 #endif // end LOG
 #else
 // Create a JSON array to hold result rows
@@ -131,7 +131,7 @@ char* handle_get_request(const char *url) {
              MYSQL_FIELD *fields = mysql_fetch_fields(resultset);
              MYSQL_ROW row;
 #if LOG == 1
-  log_message("ARRAY");
+  printf("ARRAY");
 #endif // end LOG
              while ((row = mysql_fetch_row(resultset))) {
 // Create a JSON object for each row
@@ -153,12 +153,12 @@ char* handle_get_request(const char *url) {
      } // end if bypass
 #endif // GETCORK
 #if LOG == 1
-  log_message("END");
+  printf("END");
 #endif // end LOG
   json_string = cJSON_PrintUnformatted(json);
   cJSON_Delete(json);
 #if LOG == 1
-  log_message(json_string);
+  printf(json_string);
 #endif // end LOG
   return json_string; // Caller is responsible for freeing this memory
 } // end function
