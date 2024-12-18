@@ -28,7 +28,8 @@ RUN printf "[mariadb]\nplugin-load-add=libjson2sql\nplugin_maturity=unknown\n" >
 RUN printf "#!/bin/bash \n cd /app \n git clone -b $GITBRANCH --single-branch --depth 1 https://github.com/MariaDBJones/json2sql-plugin.git . \n mkdir build \n cd build \n cmake .. \n" > clone
 RUN printf "#!/bin/bash \n cd /app/build \n cmake --build . --verbose \n" > build
 RUN printf "#!/bin/bash \n cp -f /app/plugin/libjson2sql.so /usr/lib64/mysql/plugin/ \n mariadbd-safe --defaults-extra-file=/etc/load_jsonplugin.cnf &" > deploy
-RUN printf "#!/bin/bash \n mariadb -e 'shutdown;' \n rm -f /usr/lib64/mysql/plugin/libjson2sql.so\n" > clean
+RUN printf "#!/bin/bash \n mariadb -e 'shutdown;' \n rm -f /usr/lib64/mysql/plugin/libjson2sql.so \n" > clean
+RUN printf "#!/bin/bash \n curl http://127.0.0.1:3000/v1/ping \n" > testget
 
 WORKDIR /app
 
