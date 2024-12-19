@@ -49,19 +49,26 @@ struct MHD_Daemon *listener = NULL;
 // }
 
 // sends back answer to client
+// sends back answer to client
 static int send_json_response(struct MHD_Connection *connection, const char *json_string) {
     struct MHD_Response *response = MHD_create_response_from_buffer(strlen(json_string), (void *)json_string, MHD_RESPMEM_MUST_COPY);
 // extract http return code from json_string
+    int httpcode = HTTP_OK;
     cJSON *json = cJSON_Parse(json_string);
-    cJSON *field = cJSON_GetObjectItemCaseSensitive(json, "httpcode");
-    unsigned int http_code = field->valueint; 
-    cJSON_Delete(json);
-    if (http_code == 405) {
+    if (json) {
+        cJSON *field = cJSON_GetObjectItemCaseSensitive(json, "httpcode");
+        if (cJSON_IsNumber(field)) {
+            httpcode = field->valueint;
+            // Use the code value
+        }
+        cJSON_Delete(json);
+    }
+    if (httpcode == 405) {
 // mandatory allow header for HTTP 405
         MHD_add_response_header(response, MHD_HTTP_HEADER_ALLOW, "GET, POST, PUT, PATCH, DELETE");
     }
     MHD_add_response_header(response, "Content-Type", "application/json");
-    int ret = MHD_queue_response(connection, http_code, response);
+    int ret = MHD_queue_response(connection, httpcode, response);
     MHD_destroy_response(response);
     return ret;
 }
