@@ -54,14 +54,14 @@
 #define DELETEMETHODCORK  1 // around method handler call
 
 // defining use HTTP response codes
-#define HTTP_OK                     200
-#define HTTP_INTERNAL_SERVER_ERROR  500
-#define HTTP_BAD_REQUEST            400
-#define HTTP_UNAUTHORIZED           401
-#define HTTP_FORBIDDEN              403
-#define HTTP_NOT_FOUND              404
-#define HTTP_METHOD_NOT_ALLOWED     405
-#define HTTP_UNSUPPORTED_MEDIA_TYPE 415
+#define HTTP_OK                     200 // ok
+#define HTTP_INTERNAL_SERVER_ERROR  500 // something went wrong
+#define HTTP_BAD_REQUEST            400 // url bad format (tokens / resources no good)
+#define HTTP_UNAUTHORIZED           401 // SQL privileges no good
+#define HTTP_FORBIDDEN              403 // resource not exposed
+#define HTTP_NOT_FOUND              404 // resource does not exists
+#define HTTP_METHOD_NOT_ALLOWED     405 // method & resource not compmatible
+#define HTTP_UNSUPPORTED_MEDIA_TYPE 415 // request body format not json
 
 // methodd <=> privilege translation
 // #define GET    "select"
