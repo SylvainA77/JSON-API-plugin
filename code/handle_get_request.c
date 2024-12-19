@@ -16,7 +16,6 @@ char* handle_get_request(const char *url) {
 // 2 = sql needed
 // 1 = direct answere
 // 0 = exec not possible
-}
 
 // extracting tokens from url
     int tokens = sscanf(url, "/%63[^/]/%63[^/]/%63[^/]/%63[^/]/%63[^/]/%63[^/]", version, resource, schema, object, column, value);
