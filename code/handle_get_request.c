@@ -1,5 +1,7 @@
 #include "common.h"
 
+// this function aims at resolving the http GET requests upon various resources
+// this fucntion should send back a json string in form of a char*
 char* handle_get_request(const char *url) {
 // initialize the JSON answer
     cJSON *json = cJSON_CreateObject();
