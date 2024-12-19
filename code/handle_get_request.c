@@ -64,12 +64,28 @@ switch(tokens) {
          return answerget;
       }
     break; // end tokens=2
-    case 4:
+   case 4:
+      cJSON_AddStringToObject(json, "version", version); 
+      cJSON_AddStringToObject(json, "resource", resource);
+      cJSON_AddStringToObject(json, "schema", schema);
+      cJSON_AddStringToObject(json, "table", object);
+      cJSON_AddNumberToObject(json, "strlen resource",strlen(resource));
+      cJSON_AddNumberToObject(json, "sizeof resrouce",sizeof(resource));
+      cJSON_AddNumberToObject(json, "strchr resource null is not null", isresourcent);
       cJSON_AddStringToObject(json, "action",   "QUERY");
       cJSON_AddStringToObject(json, "message",  "developped later");
       cJSON_AddNumberToObject(json, "httpcode", HTTP_OK);
     break; // end tokens=4
     case 6:
+      cJSON_AddStringToObject(json, "version", version);
+      cJSON_AddStringToObject(json, "resource", resource);
+      cJSON_AddStringToObject(json, "schema", schema);
+      cJSON_AddStringToObject(json, "table", object);
+      cJSON_AddStringToObject(json, "column", column);
+      cJSON_AddStringToObject(json, "value", value);
+      cJSON_AddNumberToObject(json, "strlen resource",strlen(resource));
+      cJSON_AddNumberToObject(json, "sizeof resrouce",sizeof(resource));
+      cJSON_AddNumberToObject(json, "strchr resource null is not null", isresourcent);
       cJSON_AddStringToObject(json, "action",   "QUERY");
       cJSON_AddNumberToObject(json, "httpcode", HTTP_OK);
     break; // end tokens=6
