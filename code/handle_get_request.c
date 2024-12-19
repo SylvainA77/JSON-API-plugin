@@ -21,18 +21,15 @@ char* handle_get_request(const char *url) {
     int tokens = sscanf(url, "/%63[^/]/%63[^/]/%63[^/]/%63[^/]/%63[^/]/%63[^/]", version, resource, schema, object, column, value);
 // end token extraction
 
+    int isresourcent=0;
+    if (strchr(resource, '\0') != NULL) {
+// String is null-terminated
+        isresourcent=1;
+    }
     cJSON_AddStringToObject(json, "status", "HANDLER");
     cJSON_AddStringToObject(json, "method", "GET");
     cJSON_AddStringToObject(json, "url", url);
     cJSON_AddNumberToObject(json, "tokens", tokens);
-    cJSON_AddStringToObject(json, "version", version);
-    cJSON_AddNumberToObject(json, "version-len", strlen(version));
-    cJSON_AddStringToObject(json, "resource", resource);
-    cJSON_AddNumberToObject(json, "resource-len",strlen(resource));
-    cJSON_AddStringToObject(json, "schema", schema);
-    cJSON_AddStringToObject(json, "table", object);
-    cJSON_AddStringToObject(json, "column", column);
-    cJSON_AddStringToObject(json, "value", value);
 
 // analyzing toeksn to match patterns and resources
 // 4 possibilites :
@@ -42,16 +39,20 @@ char* handle_get_request(const char *url) {
 // - bad request format
 switch(tokens) {
     case 2:
-      printf("resource:%s\n", resource);
-      if ( strncasecmp(resource, "ping", 63) == 0 ) {
+      cJSON_AddStringToObject(json, "version", version);
+      cJSON_AddStringToObject(json, "resource", resource);
+      cJSON_AddNumberToObject(json, "strlen resource",strlen(resource));
+      cJSON_AddNumberToObject(json, "sizeof resrouce",sizeof(resource));
+      cJSON_AddNumberToObject(json, "strchr resource null is not null", isresourcent);
+      if (strncasecmp(resource, "ping", 63) == 0 ) {
          cJSON_AddStringToObject(json, "action", "PING");
          cJSON_AddNumberToObject(json, "httpcode", HTTP_OK);
          cJSON_AddStringToObject(json, "message", "pong");
          action=1;
-      } else if ( strncasecmp(resource, "status", 63) == 0 ) {
+      } else if (strncasecmp(resource, "status", 63) == 0) {
          cJSON_AddStringToObject(json, "action", "STATUS");
          action=2;
-      }  else if ( strncasecmp(resource, "healthcheck",63) == 0 ) {
+      }  else if (strncasecmp(resource, "healthcheck",63) == 0 ) {
          cJSON_AddStringToObject(json, "action", "HEALTHCHECK");
          action=2;
       } else {
